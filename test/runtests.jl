@@ -43,4 +43,8 @@ using Base.Test
     for i in 2:8
         @test next_index!(coll, 3) == i
     end
+    # equality testing
+    @test isequal(rc, deepcopy(rc))
+    @test isequal(coll, deepcopy(coll))
+    @test isequal(ix, deepcopy(ix))
 end

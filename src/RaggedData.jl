@@ -1,5 +1,6 @@
 module RaggedData
 
+using AutoHashEquals
 using Parameters
 using Lazy
 
@@ -7,12 +8,12 @@ import Base: length, size, indices, push!, count, sizehint!, getindex, eltype
 
 export RaggedCounter, RaggedCollate, next_index!, RaggedIndex, collate_index_keys
 
-mutable struct RaggedCount{S <: Integer}
+@auto_hash_equals mutable struct RaggedCount{S <: Integer}
     index::S
     count::S
 end
 
-struct RaggedCounter{T,S}
+@auto_hash_equals struct RaggedCounter{T,S}
     dict::Dict{T,RaggedCount{S}}
 end
 
@@ -33,14 +34,14 @@ count(rc::RaggedCounter) = sum(v.count for v in values(rc.dict))
 
 @forward RaggedCounter.dict length, sizehint!
 
-struct RaggedCollate{T,S}
+@auto_hash_equals struct RaggedCollate{T,S}
     dict::Dict{T,S}
     total::S
 end
 
 next_index!(coll::RaggedCollate{T,S}, key) where {T,S} = coll.dict[key] += one(S)
 
-struct RaggedIndex{S}
+@auto_hash_equals struct RaggedIndex{S}
     cumsum::Vector{S}
 end
 
