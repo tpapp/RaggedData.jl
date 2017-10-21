@@ -48,3 +48,20 @@ using Base.Test
     @test isequal(coll, deepcopy(coll))
     @test isequal(ix, deepcopy(ix))
 end
+
+@testset "ragged columns" begin
+    ix = RaggedIndex(cumsum([5,3,2,7]))
+    v1 = collect(1:17)
+    v2 = collect(StepRangeLen(18.0, 1.0, 17))
+    rc = RaggedColumns(ix, (v1, v2))
+    @test length(rc) == 4
+    @test count(rc) == 17
+    for i in 1:length(rc)
+        j = ix[i]
+        @test rc[i] == (v1[j], v2[j])
+    end
+    @test rc[:, 2] == RaggedColumn(ix, v2)
+    @test rc[2, 1] == v1[ix[2]]
+    @test rc[:, 1:1] == RaggedColumns(ix, (v1,))
+    @test rc[2, end:end] == (v2[ix[2]],)
+end

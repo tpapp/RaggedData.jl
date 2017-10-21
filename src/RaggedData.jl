@@ -4,9 +4,12 @@ using AutoHashEquals
 using Parameters
 using Lazy
 
-import Base: length, size, indices, push!, count, sizehint!, getindex, eltype
+import Base: length, size, indices, push!, count, sizehint!, getindex, eltype, ndims
 
-export RaggedCounter, RaggedCollate, next_index!, RaggedIndex, collate_index_keys
+export
+    RaggedCounter, collate_index_keys,
+    RaggedCollate, next_index!,
+    RaggedIndex, RaggedColumns, RaggedColumn
 
 """
     RaggedCount(index, count)
@@ -101,8 +104,7 @@ end
 count(ri::RaggedIndex) = ri.cumsum[end]
 
 function getindex(ri::RaggedIndex{S}, i) where S
-    UnitRange{S}(one(S) + (i == 1 ? zero(eltype(cumsum)) : cumsum[i-1]),
-                 ri.cumsum[i])
+    UnitRange{S}(one(S) + (i == 1 ? zero(S) : ri.cumsum[i-1]), ri.cumsum[i])
 end
 
 eltype(ri::RaggedIndex{S}) where S = UnitRange{S}
@@ -110,14 +112,14 @@ eltype(ri::RaggedIndex{S}) where S = UnitRange{S}
 """
 
 """
-function _subset(ri::RaggedIndex{S}, I) where {S}
+function _subset(ix::RaggedIndex{S}, I) where {S}
     partial_sum = zero(S)
     sub_cumsum = similar(Array{S}, indices(ix))
     sub_I = Vector{S}()
     for (j,i) in enumerate(I)
-        ix = ri[i]
-        append!(sub_I, ix)
-        partial_sum += length(ix)
+        sub_ix = ix[i]
+        append!(sub_I, sub_ix)
+        partial_sum += length(sub_ix)
         sub_cumsum[j] = partial_sum
     end
     RaggedIndex(sub_cumsum), sub_I
@@ -143,5 +145,74 @@ function collate_index_keys(rc::RaggedCounter{T,S},
     end
     RaggedCollate(dict, partial_sum), RaggedIndex(index), keys
 end
+
+@auto_hash_equals struct RaggedColumns{Tix <: RaggedIndex, Tcolumns <: Tuple}
+    ix::Tix
+    columns::Tcolumns
+end
+
+@auto_hash_equals struct RaggedColumn{Tix <: RaggedIndex,
+                                      Tcolumn <: AbstractVector}
+    ix::Tix
+    column::Tcolumn
+end
+
+@forward RaggedColumns.ix count, length, indices
+
+@forward RaggedColumn.ix count, length, indices
+
+ndims(::RaggedColumns) = 2
+
+ndims(::RaggedColumn) = 1
+
+size(A::RaggedColumns) = (length(A.ix), length(A.columns))
+
+size(A::RaggedColumn) = (length(A.ix),)
+
+function size(A::RaggedColumns, i)
+    if i == 1
+        length(A.ix)
+    elseif i == 2
+        length(A.columns)
+    else
+        throw(ArgumentError("invalid dimension $i"))
+    end
+end
+
+function size(A::RaggedColumn, i)
+    i==1 ? length(A.ix) : throw(ArgumentError("invalid dimension $i"))
+end
+
+function getindex(A::RaggedColumns, i::Int)
+    j = A.ix[i]
+    map(v -> @view(v[j]), A.columns)
+end
+
+function getindex(A::RaggedColumn, i::Int)
+    j = A.ix[i]
+    @view(A.column[j])
+end
+
+getindex(A::RaggedColumns, i::Colon) = A
+
+getindex(A::RaggedColumn, i::Colon) = A
+
+function getindex(A::RaggedColumns, I)
+    sub_ix, sub_I = _subset(A.ix, to_indices(A.ix, (I,))...)
+    RaggedColumns(sub_ix, map(v -> v[sub_I], A.columns))
+end
+
+function getindex(A::RaggedColumn, I)
+    sub_ix, sub_I = _subset(A.ix, to_indices(A.ix, (I,))...)
+    RaggedColumns(sub_ix, A.column[sub_I])
+end
+
+getindex(A::RaggedColumns, I1, I2::Int) =
+    RaggedColumn(A.ix, A.columns[I2])[I1]
+
+getindex(A::RaggedColumns, I1, I2::AbstractVector) =
+    RaggedColumns(A.ix, A.columns[I2])[I1]
+
+getindex(A::RaggedColumns, I1, I2) = A[to_indices(A, (I1, I2))...]
 
 end # module
