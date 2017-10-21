@@ -1,6 +1,8 @@
 using RaggedData
 using Base.Test
 
+import RaggedData: _subset
+
 @testset "ragged data processing" begin
     # initialize and countr
     rc = RaggedCounter(Int,Int32)
@@ -49,6 +51,13 @@ using Base.Test
     @test isequal(ix, deepcopy(ix))
 end
 
+@testset "ragged index subset calculations" begin
+    ix = RaggedIndex(cumsum([5,3,2,8]))
+    sub_ix, sub_I = _subset(ix, 3:4)
+    @test sub_ix == RaggedIndex(cumsum([2,8]))
+    @test sub_I == collect(9:18)
+end
+
 @testset "ragged columns" begin
     ix = RaggedIndex(cumsum([5,3,2,7]))
     v1 = collect(1:17)
@@ -64,4 +73,7 @@ end
     @test rc[2, 1] == v1[ix[2]]
     @test rc[:, 1:1] == RaggedColumns(ix, (v1,))
     @test rc[2, end:end] == (v2[ix[2]],)
+    @test rc[3:4, 1:2] == RaggedColumns(RaggedIndex(cumsum([2,7])), (v1[9:17], v2[9:17]))
+    @test rc[3:4, :] == RaggedColumns(RaggedIndex(cumsum([2,7])), (v1[9:17], v2[9:17]))
+    @test rc[:, :] == rc
 end

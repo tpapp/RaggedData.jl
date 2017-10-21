@@ -114,12 +114,12 @@ eltype(ri::RaggedIndex{S}) where S = UnitRange{S}
 """
 function _subset(ix::RaggedIndex{S}, I) where {S}
     partial_sum = zero(S)
-    sub_cumsum = similar(Array{S}, indices(ix))
+    sub_cumsum = similar(Array{S}, indices(I))
     sub_I = Vector{S}()
     for (j,i) in enumerate(I)
-        sub_ix = ix[i]
-        append!(sub_I, sub_ix)
-        partial_sum += length(sub_ix)
+        k = ix[i]
+        append!(sub_I, k)
+        partial_sum += length(k)
         sub_cumsum[j] = partial_sum
     end
     RaggedIndex(sub_cumsum), sub_I
@@ -157,9 +157,9 @@ end
     column::Tcolumn
 end
 
-@forward RaggedColumns.ix count, length, indices
+@forward RaggedColumns.ix count, length
 
-@forward RaggedColumn.ix count, length, indices
+@forward RaggedColumn.ix count, length
 
 ndims(::RaggedColumns) = 2
 
@@ -168,6 +168,10 @@ ndims(::RaggedColumn) = 1
 size(A::RaggedColumns) = (length(A.ix), length(A.columns))
 
 size(A::RaggedColumn) = (length(A.ix),)
+
+indices(A::RaggedColumns) = (indices(A.ix, 1), Base.OneTo(length(A.columns)))
+
+indices(A::RaggedColumn) = (indices(A.ix, 1), )
 
 function size(A::RaggedColumns, i)
     if i == 1
