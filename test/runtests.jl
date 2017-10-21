@@ -85,4 +85,10 @@ end
     @test_throws ArgumentError size(rc1, 0)
     @test_throws ArgumentError size(rc, 3)
     @test_throws ArgumentError size(rc, 0)
+
+    @test ndims(rc1) == 1
+    @test ndims(rc) == 2
+    @test size(rc1) == (4,)
+    @test size(rc) == (4, 2)
+    @test size(rc, 1) == 4
 end
