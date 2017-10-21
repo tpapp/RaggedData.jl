@@ -91,4 +91,5 @@ end
     @test size(rc1) == (4,)
     @test size(rc) == (4, 2)
     @test size(rc, 1) == 4
+    @test indices(rc1) == (Base.OneTo(4),)
 end
