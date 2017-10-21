@@ -132,7 +132,7 @@ function collate_index_keys(rc::RaggedCounter{T,S},
     sizehint!(dict) = length(kv)
     index = similar(kv, S)
     keys = ifelse(collect_keys, similar(kv, T), Vector{T}(0))
-    @inbounds for i in indices(kv, 1)
+    @inbounds for i in indices(kv, 1) # dict, cumsum and keys in one sweep
         key = kv[i].first
         dict[key] = partial_sum
         partial_sum += kv[i].second.count
