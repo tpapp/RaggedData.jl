@@ -148,11 +148,33 @@ function collate_index_keys(rc::RaggedCounter{T,S},
     RaggedCollate(dict, partial_sum), RaggedIndex(index), keys
 end
 
+"""
+    RaggedColumns(count_cumsum, columns)
+
+A tuple of columns (vectors) indexes by a `RaggedIndex`.
+
+`getindex(::RaggedColumns, ::Int)` returns a tuple of vectors for that index.
+
+`getindex(::RaggedColumns, ::Any)` subsets the indexed vector.
+
+Two-argument `getindex(::RaggedColumn, I::Any, I_col::Any)` first subsets the
+indexed columns using `I_col`, then applies the one-argument `getindex` using
+`I`.
+"""
 @auto_hash_equals struct RaggedColumns{Tix <: RaggedIndex, Tcolumns <: Tuple}
     ix::Tix
     columns::Tcolumns
 end
 
+"""
+    RaggedColumn(count_cumsum, column)
+
+A single column indexed by a `RaggedIndex`.
+
+`getindex(::RaggedColumn, ::Int)` returns a vector for that index.
+
+`getindex(::RaggedColumn, ::Any)` subsets the indexed vector.
+"""
 @auto_hash_equals struct RaggedColumn{Tix <: RaggedIndex,
                                       Tcolumn <: AbstractVector}
     ix::Tix
