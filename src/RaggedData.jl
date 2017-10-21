@@ -4,7 +4,9 @@ using AutoHashEquals
 using Parameters
 using Lazy
 
-import Base: length, size, indices, push!, count, sizehint!, getindex, eltype, ndims
+import Base:
+    push!, count, sizehint!,
+    length, size, indices, getindex, eltype, ndims, endof
 
 export
     RaggedCounter, collate_index_keys,
@@ -201,6 +203,8 @@ getindex(A::RaggedColumns, i::Colon) = A
 
 getindex(A::RaggedColumn, i::Colon) = A
 
+endof(A::RaggedColumn) = length(A)
+
 function getindex(A::RaggedColumns, I)
     sub_ix, sub_I = _subset(A.ix, to_indices(A.ix, (I,))...)
     RaggedColumns(sub_ix, map(v -> v[sub_I], A.columns))
@@ -208,7 +212,7 @@ end
 
 function getindex(A::RaggedColumn, I)
     sub_ix, sub_I = _subset(A.ix, to_indices(A.ix, (I,))...)
-    RaggedColumns(sub_ix, A.column[sub_I])
+    RaggedColumn(sub_ix, A.column[sub_I])
 end
 
 getindex(A::RaggedColumns, I1, I2::Int) =

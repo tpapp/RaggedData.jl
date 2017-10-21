@@ -76,4 +76,13 @@ end
     @test rc[3:4, 1:2] == RaggedColumns(RaggedIndex(cumsum([2,7])), (v1[9:17], v2[9:17]))
     @test rc[3:4, :] == RaggedColumns(RaggedIndex(cumsum([2,7])), (v1[9:17], v2[9:17]))
     @test rc[:, :] == rc
+    rc1 = rc[:, 1]
+    @test rc1[3:4] == RaggedColumn(RaggedIndex(cumsum([2,7])), v1[9:17])
+    @test rc1[:] == rc1
+    @test rc1[end] == v1[11:17]
+
+    @test_throws ArgumentError size(rc1, 2)
+    @test_throws ArgumentError size(rc1, 0)
+    @test_throws ArgumentError size(rc, 3)
+    @test_throws ArgumentError size(rc, 0)
 end
