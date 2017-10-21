@@ -6,7 +6,8 @@ using Lazy
 
 import Base:
     push!, count, sizehint!,
-    length, size, indices, getindex, eltype, ndims, endof
+    length, size, indices, getindex, eltype, ndims, endof,
+    start, next, done
 
 export
     RaggedCounter, collate_index_keys,
@@ -244,5 +245,11 @@ getindex(A::RaggedColumns, I1, I2::AbstractVector) =
     RaggedColumns(A.ix, A.columns[I2])[I1]
 
 getindex(A::RaggedColumns, I1, I2) = A[to_indices(A, (I1, I2))...]
+
+start(A::T) where {T <: Union{RaggedColumn, RaggedColumns}} = 1
+
+next(A::T, i) where {T <: Union{RaggedColumn, RaggedColumns}} = A[i], i+1
+
+done(A::T, i) where {T <: Union{RaggedColumn, RaggedColumns}} = i > length(A)
 
 end # module

@@ -81,6 +81,7 @@ end
     @test rc1[:] == rc1
     @test rc1[end] == v1[11:17]
 
+    # array interface
     @test_throws ArgumentError size(rc1, 2)
     @test_throws ArgumentError size(rc1, 0)
     @test_throws ArgumentError size(rc, 3)
@@ -92,4 +93,13 @@ end
     @test size(rc) == (4, 2)
     @test size(rc, 1) == 4
     @test indices(rc1) == (Base.OneTo(4),)
+
+    # iteration
+    @test collect(rc1) ==
+        Any[[1, 2, 3, 4, 5], [6, 7, 8], [9, 10], [11, 12, 13, 14, 15, 16, 17]]
+    @test collect(rc) ==
+        Any[([1, 2, 3, 4, 5], [18.0, 19.0, 20.0, 21.0, 22.0]),
+            ([6, 7, 8], [23.0, 24.0, 25.0]),
+            ([9, 10], [26.0, 27.0]),
+            ([11, 12, 13, 14, 15, 16, 17], [28.0, 29.0, 30.0, 31.0, 32.0, 33.0, 34.0])]
 end
