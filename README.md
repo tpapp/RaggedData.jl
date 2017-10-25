@@ -75,3 +75,8 @@ third `9:10`.
 
 `RaggedColumns` and `RaggedColumn` are thin wrapper types to address a
 tuple of vectors using ragged indices.
+
+# Acknowledgments
+
+Work on this library was supported by the Austrian National Bank
+Jubiläumsfonds grant #17378.
