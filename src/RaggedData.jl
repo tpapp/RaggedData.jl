@@ -135,6 +135,12 @@ function _subset(ix::RaggedIndex{S}, I) where {S}
     RaggedIndex(sub_cumsum), sub_I
 end
 
+"""
+    collate, index, keys = collate_index_keys(ragged_counter; collect_keys = false)
+
+Return a collator `collate`, an index `index`, and possibly `keys` (may be an
+empty vector if `!collect_keys`.
+"""
 function collate_index_keys(rc::RaggedCounter{T,S},
                             collect_keys = false) where {T,S}
     kv = collect(rc.dict)
