@@ -29,7 +29,7 @@ id,observation
 2,obs22
 2,obs23
 3,obs32
-``
+```
 
 which has 4 observations for individual `1`, 3 for individual `2`, and
 `2` for individual `3`.
