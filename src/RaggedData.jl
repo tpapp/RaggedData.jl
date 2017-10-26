@@ -187,7 +187,7 @@ to obtain single or multiple columns.
     function RaggedColumns(ix::Tix,
                            columns::Tcolumns) where {Tix <: RaggedIndex,
                                                      Tcolumns <:
-                                                     Tuple{Vararg{Vector}}}
+                                                     Tuple{Vararg{AbstractVector}}}
         S = Tuple{map(c -> _vector_view_type(ix, c), columns)...}
         new{Tix, Tcolumns, S}(ix, columns)
     end
