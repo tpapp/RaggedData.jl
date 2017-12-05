@@ -6,17 +6,17 @@ import RaggedData: _subset
 @testset "ragged data processing" begin
     # initialize and countr
     rc = RaggedCounter(Int,Int32)
-    push!(rc, 3)
-    push!(rc, 2)
-    push!(rc, 1)
+    @test rc(3) == 3
+    @test rc(2) == 2
+    @test rc(1) == 1
     for _ in 1:3
-        push!(rc, 1)
+        @test rc(1) == 1
     end
     for _ in 1:10
-        push!(rc, 2)
+        @test rc(2) == 2
     end
     for _ in 1:7
-        push!(rc, 3)
+        @test rc(3) == 3
     end
     @test length(rc) == 3
     @test count(rc) == 3+3+10+7

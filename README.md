@@ -41,7 +41,7 @@ integers `::S` (eg `Int64`, though `Int32` should do for most datasets,
 and may save memory if you are processing a lot of data). In the
 first pass, you iterate through the data (possibly parsing and saving
 it, see [LargeColumns.jl](https://github.com/tpapp/LargeColumns.jl)),
-using `push!(::RaggedCounter, id)` and you end up with the following
+using `(::RaggedCounter)(id)` and you end up with the following
 counts:
 
 | id | count |

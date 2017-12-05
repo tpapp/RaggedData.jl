@@ -5,7 +5,7 @@ using Parameters: @unpack
 using Lazy: @forward
 
 import Base:
-    push!, count, sizehint!, indices, length, size, getindex, IndexStyle
+    count, sizehint!, indices, length, size, getindex, IndexStyle
 
 export
     RaggedCounter, collate_index_keys,
@@ -28,7 +28,8 @@ end
     RaggedCounter(T, S)
 
 Count keys of type `T` with integers of type `S`. New keys can be added with
-`push!(rc::RaggedCounter, key)`. The order of new keys is preserved.
+`(rc::RaggedCounter(key)`, which returns `key`. The order of new keys is
+preserved.
 
 `count(::RaggedCounter)` returns the total number of keys counter, while
 `length(::RaggedCounter)` the number of unique keys. Use `sizehint!` for a
@@ -47,14 +48,14 @@ end
 RaggedCounter(T,S::Type{<:Integer}) =
     RaggedCounter{T,S}(Dict{T,RaggedCount{S}}())
 
-function push!(rc::RaggedCounter{T,S}, key) where {T,S}
+function (rc::RaggedCounter{T,S})(key) where {T,S}
     @unpack dict = rc
     if haskey(dict, key)
         dict[key].count += one(S)
     else
         dict[key] = RaggedCount(S(length(dict)) + one(S), one(S))
     end
-    nothing
+    key
 end
 
 count(rc::RaggedCounter) = sum(v.count for v in values(rc.dict))
