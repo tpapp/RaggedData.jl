@@ -1,8 +1,8 @@
 module RaggedData
 
-using AutoHashEquals
-using Parameters
-using Lazy
+using AutoHashEquals: @auto_hash_equals
+using Parameters: @unpack
+using Lazy: @forward
 
 import Base:
     push!, count, sizehint!, indices, length, size, getindex, IndexStyle
