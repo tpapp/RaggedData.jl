@@ -1,3 +1,4 @@
+__precompile__()
 module RaggedData
 
 using AutoHashEquals: @auto_hash_equals
