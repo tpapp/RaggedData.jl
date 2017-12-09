@@ -1,4 +1,7 @@
 julia 0.6
+ArgCheck
 AutoHashEquals
+DataStructures
+DocStringExtensions
 Lazy
 Parameters

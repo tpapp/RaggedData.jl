@@ -1,17 +1,15 @@
 __precompile__()
 module RaggedData
 
+using ArgCheck: @argcheck
 using AutoHashEquals: @auto_hash_equals
-using Parameters: @unpack
+using DataStructures: OrderedDict
+using DocStringExtensions: SIGNATURES
 using Lazy: @forward
+using Parameters: @unpack
 
 import Base:
     count, sizehint!, indices, length, size, getindex, IndexStyle
-
-export
-    RaggedCounter, collate_index_keys,
-    RaggedCollate, next_index!,
-    RaggedIndex, RaggedColumns, RaggedColumn
 
 """
     RaggedCount(index, count)
@@ -249,6 +247,61 @@ end
 function getindex(A::RaggedColumn, I)
     sub_ix, sub_I = _subset(A.ix, to_indices(A.ix, (I,))...)
     RaggedColumn(sub_ix, A.column[sub_I])
+end
+
+
+# permutation interface experiment
+
+"""
+    $SIGNATURES
+
+Return the contiguous ranges that [`contiguous_invperm`](@ref) would map data
+with `counts` to.
+"""
+function contiguous_ranges(counts::OrderedDict{T, S}) where {T, S <: Integer}
+    N = zero(S)
+    [(z = N; N += c; (z+one(S)):N) for c in values(counts)]
+end
+
+"""
+    $SIGNATURES
+
+Similar to [`contiguous_invperm!`](@ref), but writes the permutation to a
+preallocated vector, its first argument.
+"""
+function contiguous_invperm!(p::AbstractVector{S},
+                             x::AbstractVector{T},
+                             counts::OrderedDict{T,S}) where {T, S <: Integer}
+    I = indices(x, 1)
+    @argcheck I == indices(p, 1) "Incompatible indices."
+    @argcheck sum(values(counts)) == length(I) "Length of x does not match counts."
+    N = zero(S)
+    c = OrderedDict((n = N; N += v; k => n) for (k, v) in counts)
+    for i in I
+        p[i] = (c[x[i]] += one(S))
+    end
+    p
+end
+
+"""
+    $SIGNATURES
+
+When `x` is a vector, and `counts[y]` is the number of elements `y .== x`,
+return an inverse permutation vector `p` that groups the same values of `x`
+together while keeping the order. That is to say, if
+
+```julia
+rs = contiguous_ranges(counts)
+z = similar(x)
+p = contiguous_invperm(x, counts)
+z[p] .= x
+```
+
+then elements of `z[r]` are equal for `r in rs`.
+"""
+function contiguous_invperm(x::AbstractVector{T},
+                            counts::OrderedDict{T,S}) where {T, S <: Integer}
+    contiguous_invperm!(similar(x, S), x, counts)
 end
 
 end # module

@@ -1,7 +1,14 @@
-using RaggedData
 using Base.Test
 
-import RaggedData: _subset
+using RaggedData:
+    # old interface
+    RaggedCounter, collate_index_keys,
+    RaggedCollate, next_index!,
+    RaggedIndex, RaggedColumns, RaggedColumn,
+    # experimental interface
+    _subset, contiguous_ranges, contiguous_invperm, contiguous_invperm!
+
+using DataStructures: OrderedDict
 
 @testset "ragged data processing" begin
     # initialize and countr
@@ -114,4 +121,39 @@ end
     @test collect(rc2) ==
         Any[[1, 2, 3, 4, 5], [6, 7, 8], [9, 10], [11, 12, 13, 14, 15, 16, 17]]
     @test rc2[2:3] == [[6, 7, 8], [9, 10]]
+end
+
+@testset "contiguous permutations" begin
+    for _ in 1:30
+        N = rand(5:20)          # number of distinct elements
+        K = rand(100:200)       # number of additional observations
+        T = rand([Int64, Int32, Int16, UInt64, UInt32, UInt16])
+        xs = rand(1:N, N + K)
+        xs[1:N] .= 1:N              # to establish order
+        c = OrderedDict{Int, T}()
+        for x in xs
+            c[x] = get(c, x, 0) + 1
+        end
+        rs = contiguous_ranges(c)
+        @test eltype(rs) ≡ UnitRange{T}
+        for (i, r) in enumerate(rs)
+            @test length(r) == sum(xs .== i)
+            if i > 1
+                @test rs[i-1].stop + 1 == r.start
+            else
+                @test r.start == 1
+            end
+        end
+        p = contiguous_invperm(xs, c)
+        @test length(p) == length(xs)
+        @test eltype(p) ≡ T
+        @test sort(p) == collect(indices(xs, 1))
+        z = collect(enumerate(xs))
+        zp = similar(z)
+        zp[p] .= z
+        for (i, r) in enumerate(rs)
+            @test issorted(first.(zp[r]))
+            @test all(last.(zp[r]) .== i)
+        end
+    end
 end
