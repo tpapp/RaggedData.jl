@@ -255,6 +255,21 @@ end
 """
     $SIGNATURES
 
+Calculate counts distinct elements of `itr` as an `OrderedDict`. Counting is
+performed using type `S`. See [`contiguous_ranges`](@ref) and
+[`contiguous_invperm`](@ref).
+"""
+function ordered_counts(itr, S::Type{<: Integer} = Int)
+    c = OrderedDict{eltype(itr), S}()
+    for x in itr
+        c[x] = get(c, x, zero(S)) + one(S)
+    end
+    c
+end
+
+"""
+    $SIGNATURES
+
 Return the contiguous ranges that [`contiguous_invperm`](@ref) would map data
 with `counts` to.
 """

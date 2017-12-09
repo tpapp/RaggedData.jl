@@ -4,9 +4,9 @@ using RaggedData:
     # old interface
     RaggedCounter, collate_index_keys,
     RaggedCollate, next_index!,
-    RaggedIndex, RaggedColumns, RaggedColumn,
+    RaggedIndex, RaggedColumns, RaggedColumn, _subset,
     # experimental interface
-    _subset, contiguous_ranges, contiguous_invperm, contiguous_invperm!
+    ordered_counts, contiguous_ranges, contiguous_invperm, contiguous_invperm!
 
 using DataStructures: OrderedDict
 
@@ -134,6 +134,8 @@ end
         for x in xs
             c[x] = get(c, x, 0) + 1
         end
+        c2 = ordered_counts(xs)
+        @test c2 == c
         rs = contiguous_ranges(c)
         @test eltype(rs) ≡ UnitRange{T}
         for (i, r) in enumerate(rs)
